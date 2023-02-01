@@ -1,9 +1,9 @@
 from django.contrib import admin
-from .models import roomIDModel
+from .models import usersModel
 
 # Register your models here.
-@admin.register(roomIDModel)
-class staffs(admin.ModelAdmin):
-	list_display = ('roomid', 'createdBy')
-	ordering = ('roomid',)
-	search_fields = ('roomid', 'createdBy')
+@admin.register(usersModel)
+class users(admin.ModelAdmin):
+	list_display = ('uid', 'name', 'role', 'channel')
+	ordering = ('channel','role','uid','name',)
+	search_fields = ('uid', 'name', 'role', 'channel')
