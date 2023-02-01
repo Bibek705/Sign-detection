@@ -10,10 +10,17 @@ let localTracks = []
 let remoteUsers = {}
 
 let joinAndDisplayLocalStream = async () => {
+    document.getElementById('room-name').innerText = Channel
+
     client.on('user-published', handleUserJoined)
     client.on('user-left', handleUserLeft)
 
-    await client.join(App_ID, Channel, Token, UID)
+    try {
+        await client.join(App_ID, Channel, Token, UID)
+    } catch (error) {
+        window.open('/','_self')
+        console.log(error)
+    }
 
     localTracks = await AgoraRTC.createMicrophoneAndCameraTracks()
 
@@ -35,6 +42,8 @@ let handleUserJoined = async (user, mediaType) => {
     remoteUsers[user.uid]=user
     await client.subscribe(user,mediaType)
 
+    let member = await getMember(user)
+
     if(mediaType==='video'){
         let player = document.getElementById(`user-container-${user.uid}`)
         if(player != null){
@@ -44,7 +53,7 @@ let handleUserJoined = async (user, mediaType) => {
         player = `<div class="video-container" id="user-container-${user.uid}">
                     <div class="video-player" id = "user-${user.uid}"></div>
                     <div class="username-wrapper">
-                        <span class="user-name"></span>
+                        <span class="user-name">${member.name}</span>
                     </div>
                 </div>`
 
@@ -91,6 +100,12 @@ let toggleMic = async (e) => {
         await localTracks[0].setMuted(true)
         e.target.style.backgroundColor='rgb(255,80,80)'
     }
+}
+
+let getMember = async (user) => {
+    let response = await fetch(`/get_member/?UID=${user.uid}&room_name=${Channel}`)
+    let member = await response.json()
+    return member
 }
 
 joinAndDisplayLocalStream()
