@@ -24,6 +24,24 @@
                 filter: drop-shadow(3px 5px 10px #000);
                 border-radius: 8px;
             }
+            /* .logRoomWin{
+                margin: auto;
+                background-color: rgba(255, 255, 255, 0.1);
+                position: relative;
+                top: 50%;
+                -ms-transform: translateY(-50%);
+                transform: translateY(-50%);
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                width: fit-content;
+                padding: 20px;
+                height: max-content;
+                border: 1px solid #e3f2fd;
+                filter: drop-shadow(3px 5px 10px #000);
+                border-radius: 8px;
+            } */
             .material-symbols-outlined {
                 font-variation-settings:
                 'FILL' 0,
@@ -129,11 +147,18 @@
                     <input style="background-color: rgba(255,255,255,0.1); color: #fff;" type="text" name="createUserName" class="form-control createUserName" id="floatingInputInvalid" placeholder="yourname">
                     <label for="floatingInputInvalid" style="color: #fff;">Your Name</label>
                 </div>
-                <p id="createUsernameErrorText" style="display: none; color: #dc3545;"><i class="bi bi-exclamation-circle-fill"></i> Username cannot be empty.</p>
+                <p id="createUsernameErrorText" style="display: none; color: #dc3545;"><i class="bi bi-exclamation-circle-fill"></i>Username cannot be empty.</p>
+                <div style="margin-top: 6px; display: none;" class="form-floating" id="roomid">
+                    <input style="background-color: rgba(255,255,255,0.1); color: #fff;" type="text" name="roomcode" class="form-control roomcode" id="floatingInputInvalid" placeholder="yourname">
+                    <label for="floatingInputInvalid" style="color: #fff;">Room ID</label>
+                </div>
+                <p id="roomidErrorText" style="display: none; color: #dc3545;"><i class="bi bi-exclamation-circle-fill"></i> Room ID cannot be empty.</p>
             </form>
             <button class="btn btn-primary mt-2" style="background-color: #00adef; width: 100%;" id="createRoomBtn">Create New Room</button>
+            <button class="btn btn-primary mt-2" style="background-color: #00adef; width: 100%; display: none;" id="joinRoomBtn">Join Room</button>
             <br>
-            <p id="joinRoomLine" style="text-align: right; margin-top: 6px; margin-bottom: 6px; font-size: 14px;">Have a code? <a type="button" id="clicktojoinroom" style="text-decoration: underline;">Join room</a>.</p>
+            <p id="joinRoomLine" style="width: 100%; text-align: right; margin-top: 6px; margin-bottom: 6px; font-size: 14px;">Have a code? <a type="button" id="clicktojoinroom" style="text-decoration: underline;">Join room</a>.</p>
+            <p id="createRoomLine" style="width: 100%; text-align: right; margin-top: 6px; margin-bottom: 6px; font-size: 14px; display: none;">Doesn't have a code? <a type="button" id="clicktocreateroom" style="text-decoration: underline;">Create new room</a>.</p>
         </div>
         {% if roomID %}
             <!-- Button trigger modal -->
@@ -206,17 +231,32 @@
         });
     </script>
     <script>
+        document.getElementById('clicktojoinroom').addEventListener('click', function () {
+            document.getElementById('roomid').style.display = 'block';
+            document.getElementById('joinRoomBtn').style.display = 'block';
+            document.getElementById('createRoomBtn').style.display = 'none';
+            document.getElementById('createRoomLine').style.display = 'block';
+            document.getElementById('joinRoomLine').style.display = 'none';
+        });
+        document.getElementById('clicktocreateroom').addEventListener('click', function () {
+            document.getElementById('roomid').style.display = 'none';
+            document.getElementById('joinRoomBtn').style.display = 'none';
+            document.getElementById('createRoomBtn').style.display = 'block';
+            document.getElementById('createRoomLine').style.display = 'none';
+            document.getElementById('joinRoomLine').style.display = 'block';
+        });
         document.getElementById('createRoomBtn').addEventListener('click',async(e) => {
             let userName = document.getElementsByClassName('createUserName')[0].value;
             if (userName==''){
                 document.getElementsByClassName('createUserName')[0].classList.add('is-invalid');
                 document.getElementById('createUsernameErrorText').style.display='block';
-           }else{
-                let response = await fetch(`/getToken/?userName=${userName}`);
+            }else{
+                let roomid=''
+                let response = await fetch(`/createToken/?userName=${roomid}&room=${userName}`);
                 let data = await response.json()
                 let UID = data.uid
                 let Token = data.token
-                let username = data.username
+                let username = data.user
                 let Channel = data.channel
 
                 sessionStorage.setItem('UID', UID)
@@ -225,6 +265,32 @@
                 sessionStorage.setItem('Channel', Channel)
                 window.open('/room/', '_self')
             }
+        });
+        document.getElementById('joinRoomBtn').addEventListener('click', async(e) => {
+            let userName = document.getElementsByClassName('createUserName')[0].value;
+            let Roomid = document.getElementsByClassName('roomcode')[0].value;
+            console.log(userName,Roomid)
+            if (userName == '') {
+                document.getElementsByClassName('createUserName')[0].classList.add('is-invalid');
+                document.getElementById('createUsernameErrorText').style.display = 'block';
+            } else if (Roomid=='') {
+                document.getElementsByClassName('roomcode')[0].classList.add('is-invalid');
+                document.getElementById('roomidErrorText').style.display = 'block';
+            } else {
+                let response = await fetch(`/createToken/?userName=${Roomid}&room=${userName}`);
+                let data = await response.json()
+                let Token = data.token
+                let Channel = data.channel
+                let username = data.user
+                let UID = data.uid
+
+                sessionStorage.setItem('UID', UID)
+                sessionStorage.setItem('Token', Token)
+                sessionStorage.setItem('username', username)
+                sessionStorage.setItem('Channel', Channel)
+                
+                window.open('/room/', '_self')
+            }         
         });
     </script>
 </html>
