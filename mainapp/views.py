@@ -1,10 +1,13 @@
 from django.shortcuts import render, redirect
-from .functions import createRoomToken
-
+from .functions import createRoomToken, getmember
 
 # Create your views here.
-def get_token(request):
+def create_token(request):
     return createRoomToken(request)
+
+
+def getMember(request):
+    return getmember(request)
 
 def createOrJoinRoom(request):
     context={}
